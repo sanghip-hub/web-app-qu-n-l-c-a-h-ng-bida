@@ -2,84 +2,91 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { formatVND } from "@/lib/utils/format";
 import TimerDisplay from "@/components/shared/TimerDisplay";
-import StartSessionModal from "./StartSessionModal";
+import StartSessionModal from "@/components/venue/StartSessionModal";
 
-type Venue = {
+type VenueSession = {
+  id: string;
+  startedAt: Date;
+  order: { totalAmount: number } | null;
+};
+
+type VenueWithSession = {
   id: string;
   name: string;
   type: string;
-  hourlyRate: number;
   status: string;
-  sessions: Array<{
-    id: string;
-    startedAt: Date;
-    order: { totalAmount: number; items: unknown[] } | null;
-  }>;
+  hourlyRate: number;
+  sessions: VenueSession[];
 };
 
-export default function VenueCard({ venue }: { venue: Venue }) {
-  const [showStart, setShowStart] = useState(false);
+interface Props {
+  venue: VenueWithSession;
+}
+
+export default function VenueCard({ venue }: Props) {
+  const [showModal, setShowModal] = useState(false);
   const activeSession = venue.sessions[0];
+  const isOccupied = venue.status === "OCCUPIED";
+  const isMaintenance = venue.status === "MAINTENANCE";
 
-  const statusColor =
-    venue.status === "AVAILABLE"
-      ? "bg-green-50 border-green-200"
-      : venue.status === "OCCUPIED"
-      ? "bg-red-50 border-red-200"
-      : "bg-gray-50 border-gray-200";
+  const borderClass = isOccupied
+    ? "bg-red-50 border-red-200 hover:border-red-300"
+    : isMaintenance
+    ? "bg-gray-50 border-gray-200 cursor-default"
+    : "bg-green-50 border-green-200 hover:border-green-300";
 
-  const dotColor =
-    venue.status === "AVAILABLE"
-      ? "bg-green-400"
-      : venue.status === "OCCUPIED"
-      ? "bg-red-400"
-      : "bg-gray-300";
+  const dotColor = isOccupied ? "bg-red-400" : isMaintenance ? "bg-gray-300" : "bg-green-400";
 
-  return (
-    <>
-      <div
-        className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all hover:shadow-md ${statusColor}`}
-        onClick={() => {
-          if (venue.status === "AVAILABLE") setShowStart(true);
-        }}
-      >
-        <div className="flex items-center justify-between mb-2">
-          <span className="font-semibold text-gray-800 text-sm">{venue.name}</span>
-          <div className={`w-2.5 h-2.5 rounded-full ${dotColor}`} />
-        </div>
-
-        {activeSession ? (
-          <Link
-            href={`/session/${activeSession.id}`}
-            onClick={(e) => e.stopPropagation()}
-            className="block"
-          >
-            <TimerDisplay
-              startedAt={activeSession.startedAt}
-              hourlyRate={venue.hourlyRate}
-              showAmount
-              className="text-center"
-            />
-          </Link>
-        ) : (
-          <div className="text-center py-2">
-            <p className="text-xs text-gray-400">
-              {venue.status === "AVAILABLE" ? "Nhấn để mở" : "Bảo trì"}
-            </p>
-            <p className="text-xs text-gray-400 mt-0.5">{formatVND(venue.hourlyRate)}/giờ</p>
-          </div>
-        )}
+  const cardContent = (
+    <div className={`p-4 rounded-xl border-2 transition-colors ${borderClass}`}>
+      <div className="flex items-start justify-between mb-1">
+        <h3 className="font-semibold text-gray-800 text-sm leading-tight">{venue.name}</h3>
+        <div className={`w-2.5 h-2.5 rounded-full mt-0.5 flex-shrink-0 ${dotColor}`} />
       </div>
+      <p className="text-xs text-gray-400 mb-3">
+        {venue.type === "BILLIARD" ? "🎱 Bida" : "⚽ Sân"}
+      </p>
 
-      {showStart && (
-        <StartSessionModal
-          venue={venue}
-          open={showStart}
-          onClose={() => setShowStart(false)}
+      {isOccupied && activeSession ? (
+        <TimerDisplay
+          startedAt={activeSession.startedAt}
+          hourlyRate={venue.hourlyRate}
+          showAmount
+          className="text-center"
         />
+      ) : isMaintenance ? (
+        <p className="text-xs text-gray-400 text-center py-3">Bảo trì</p>
+      ) : (
+        <p className="text-xs text-green-600 text-center py-3 font-medium">Nhấn để mở</p>
       )}
-    </>
+    </div>
   );
+
+  if (isOccupied && activeSession) {
+    return (
+      <Link href={`/session/${activeSession.id}`} className="block cursor-pointer">
+        {cardContent}
+      </Link>
+    );
+  }
+
+  if (venue.status === "AVAILABLE") {
+    return (
+      <>
+        <div onClick={() => setShowModal(true)} className="cursor-pointer">
+          {cardContent}
+        </div>
+        {showModal && (
+          <StartSessionModal
+            venue={venue}
+            open={showModal}
+            onClose={() => setShowModal(false)}
+          />
+        )}
+      </>
+    );
+  }
+
+  return cardContent;
 }

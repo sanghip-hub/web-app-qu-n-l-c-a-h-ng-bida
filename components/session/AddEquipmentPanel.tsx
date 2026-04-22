@@ -20,11 +20,19 @@ export default function AddEquipmentPanel({ orderId, sessionId, equipment }: Pro
     startTransition(async () => {
       try {
         await addEquipmentToOrder(orderId, sessionId, item, 1);
-        toast.success(`Đã thuê ${item.name}`);
+        toast.success(`Đã thêm ${item.name}`);
       } catch {
-        toast.error("Lỗi khi thuê dụng cụ");
+        toast.error("Lỗi khi thêm dụng cụ");
       }
     });
+  }
+
+  if (equipment.length === 0) {
+    return (
+      <p className="text-center text-gray-400 py-8 text-sm">
+        Chưa có dụng cụ nào. Vào Dụng cụ để thêm.
+      </p>
+    );
   }
 
   return (
@@ -34,18 +42,22 @@ export default function AddEquipmentPanel({ orderId, sessionId, equipment }: Pro
           key={item.id}
           onClick={() => handleAdd(item)}
           disabled={isPending || item.available === 0}
-          className="flex flex-col px-3 py-3 bg-white border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors text-sm text-left disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex justify-between items-center px-3 py-2 bg-white border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed text-left"
         >
-          <span className="font-medium text-gray-800">{item.name}</span>
-          <span className="text-green-600 font-semibold mt-0.5">
-            {formatVND(item.rentalPrice)}/{item.rentalUnit === "PER_USE" ? "lần" : "giờ"}
-          </span>
-          <span className="text-xs text-gray-400 mt-0.5">Còn: {item.available}</span>
+          <div>
+            <p className="font-medium text-gray-800">{item.name}</p>
+            <p className="text-xs text-gray-400">
+              {item.rentalUnit === "PER_USE" ? "Theo lần" : "Theo giờ"}
+            </p>
+          </div>
+          <div className="text-right ml-2 flex-shrink-0">
+            <p className="text-green-600 font-semibold">{formatVND(item.rentalPrice)}</p>
+            {item.available === 0 && (
+              <p className="text-xs text-red-400">Hết</p>
+            )}
+          </div>
         </button>
       ))}
-      {equipment.length === 0 && (
-        <p className="col-span-2 text-center text-gray-400 py-8 text-sm">Chưa có dụng cụ</p>
-      )}
     </div>
   );
 }
