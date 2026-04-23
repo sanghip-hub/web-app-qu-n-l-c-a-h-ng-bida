@@ -67,7 +67,7 @@ export default function ReportsClient({ data }: Props) {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
-            <Tooltip formatter={(v: number) => formatVND(v)} />
+            <Tooltip formatter={(v) => formatVND(Number(v))} />
             <Bar dataKey="value" fill="#16a34a" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
