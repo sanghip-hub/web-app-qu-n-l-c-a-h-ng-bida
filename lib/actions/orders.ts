@@ -78,8 +78,10 @@ export async function getRecentOrders(limit = 100, from?: Date, to?: Date) {
     orderBy: { paidAt: "desc" },
     take: limit,
     include: {
-      session: { include: { venue: true } },
-      items: true,
+      session: {
+        include: { venue: true },
+      },
+      items: { orderBy: { type: "asc" } },
     },
   });
 }
