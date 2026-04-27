@@ -69,9 +69,12 @@ async function updateOrderTotal(orderId: string) {
   await prisma.order.update({ where: { id: orderId }, data: { totalAmount: total } });
 }
 
-export async function getRecentOrders(limit = 50) {
+export async function getRecentOrders(limit = 100, from?: Date, to?: Date) {
   return prisma.order.findMany({
-    where: { status: "PAID" },
+    where: {
+      status: "PAID",
+      ...(from && to ? { paidAt: { gte: from, lte: to } } : {}),
+    },
     orderBy: { paidAt: "desc" },
     take: limit,
     include: {

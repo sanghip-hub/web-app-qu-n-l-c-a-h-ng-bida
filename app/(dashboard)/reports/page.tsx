@@ -1,15 +1,17 @@
 import { getRevenueReport } from "@/lib/actions/reports";
+import { getPeriodRange } from "@/lib/utils/period";
 import ReportsClient from "./ReportsClient";
-import { startOfMonth, endOfMonth } from "date-fns";
 
 export const dynamic = "force-dynamic";
 
-export default async function ReportsPage() {
-  const now = new Date();
-  const from = startOfMonth(now);
-  const to = endOfMonth(now);
-
+export default async function ReportsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string }>;
+}) {
+  const { period = "thisMonth" } = await searchParams;
+  const { from, to } = getPeriodRange(period);
   const data = await getRevenueReport(from, to);
 
-  return <ReportsClient data={data} defaultFrom={from} defaultTo={to} />;
+  return <ReportsClient data={data} period={period} />;
 }

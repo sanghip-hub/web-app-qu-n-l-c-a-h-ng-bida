@@ -2,15 +2,7 @@
 
 import { formatVND } from "@/lib/utils/format";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
-
-type Session = {
-  id: string;
-  endedAt: Date | null;
-  venue: { name: string; type: string };
-  order: { totalAmount: number } | null;
-};
+import PeriodFilter from "@/components/PeriodFilter";
 
 interface Props {
   data: {
@@ -20,13 +12,11 @@ interface Props {
     productRevenue: number;
     equipmentRevenue: number;
     topProducts: Array<{ name: string; qty: number; amount: number }>;
-    sessions: Session[];
   };
-  defaultFrom: Date;
-  defaultTo: Date;
+  period: string;
 }
 
-export default function ReportsClient({ data }: Props) {
+export default function ReportsClient({ data, period }: Props) {
   const { totalRevenue, totalSessions, timeRevenue, productRevenue, equipmentRevenue, topProducts } = data;
 
   const chartData = [
@@ -37,9 +27,11 @@ export default function ReportsClient({ data }: Props) {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Báo cáo doanh thu</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <h1 className="text-2xl font-bold text-gray-900">Báo cáo doanh thu</h1>
+        <PeriodFilter current={period} />
+      </div>
 
-      {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white border rounded-xl p-4">
           <p className="text-sm text-gray-500">Tổng doanh thu</p>
@@ -59,7 +51,6 @@ export default function ReportsClient({ data }: Props) {
         </div>
       </div>
 
-      {/* Chart */}
       <div className="bg-white border rounded-xl p-6">
         <h2 className="text-base font-semibold mb-4">Phân bổ doanh thu</h2>
         <ResponsiveContainer width="100%" height={200}>
@@ -73,7 +64,6 @@ export default function ReportsClient({ data }: Props) {
         </ResponsiveContainer>
       </div>
 
-      {/* Top products */}
       {topProducts.length > 0 && (
         <div className="bg-white border rounded-xl p-6">
           <h2 className="text-base font-semibold mb-4">Top sản phẩm</h2>

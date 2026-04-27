@@ -1,20 +1,31 @@
 import { getRecentOrders } from "@/lib/actions/orders";
+import { getPeriodRange } from "@/lib/utils/period";
 import { formatVND } from "@/lib/utils/format";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import PeriodFilter from "@/components/PeriodFilter";
 
 export const dynamic = "force-dynamic";
 
-export default async function OrdersPage() {
-  const orders = await getRecentOrders(100);
+export default async function OrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string }>;
+}) {
+  const { period = "today" } = await searchParams;
+  const { from, to } = getPeriodRange(period);
+  const orders = await getRecentOrders(200, from, to);
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Lịch sử đơn hàng</h1>
+    <div className="p-6 space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <h1 className="text-2xl font-bold text-gray-900">Lịch sử đơn hàng</h1>
+        <PeriodFilter current={period} />
+      </div>
 
       {orders.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          <p>Chưa có đơn hàng nào</p>
+          <p>Không có đơn hàng trong khoảng thời gian này</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl border overflow-hidden">
