@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { createEquipment, updateEquipment, deleteEquipment } from "@/lib/actions/equipment";
 import { formatVND } from "@/lib/utils/format";
 import { toast } from "sonner";
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 type Equipment = { id: string; name: string; rentalPrice: number; rentalUnit: string; available: number; active: boolean };
 
 export default function EquipmentClient({ equipment }: { equipment: Equipment[] }) {
+  const router = useRouter();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: "", rentalPrice: 0, available: 1 });
   const [newForm, setNewForm] = useState({ name: "", rentalPrice: 10000, rentalUnit: "PER_USE", available: 1 });
@@ -27,6 +29,7 @@ export default function EquipmentClient({ equipment }: { equipment: Equipment[] 
         await updateEquipment(id, editForm);
         setEditingId(null);
         toast.success("Đã cập nhật");
+        router.refresh();
       } catch {
         toast.error("Lỗi khi cập nhật");
       }
@@ -34,11 +37,12 @@ export default function EquipmentClient({ equipment }: { equipment: Equipment[] 
   }
 
   function handleDelete(id: string, name: string) {
-    if (!confirm(`Ẩn dụng cụ "${name}"?`)) return;
+    if (!confirm(`Xóa dụng cụ "${name}"?`)) return;
     startTransition(async () => {
       try {
         await deleteEquipment(id);
-        toast.success(`Đã ẩn ${name}`);
+        toast.success(`Đã xóa ${name}`);
+        router.refresh();
       } catch {
         toast.error("Lỗi khi xóa");
       }
@@ -52,6 +56,7 @@ export default function EquipmentClient({ equipment }: { equipment: Equipment[] 
         setShowNew(false);
         setNewForm({ name: "", rentalPrice: 10000, rentalUnit: "PER_USE", available: 1 });
         toast.success("Đã thêm dụng cụ");
+        router.refresh();
       } catch {
         toast.error("Lỗi khi thêm");
       }
