@@ -135,16 +135,31 @@ function OrderDetail({ order }: { order: Order }) {
 interface Props {
   orders: Order[];
   period: string;
+  fromParam?: string;
+  toParam?: string;
 }
 
-export default function OrdersClient({ orders, period }: Props) {
+export default function OrdersClient({ orders, period, fromParam, toParam }: Props) {
   const [selected, setSelected] = useState<Order | null>(null);
+
+  const totalRevenue = orders.reduce((sum, o) => sum + o.totalAmount, 0);
 
   return (
     <div className="p-6 space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-bold text-gray-900">Lịch sử đơn hàng</h1>
-        <PeriodFilter current={period} />
+        <PeriodFilter current={period} fromParam={fromParam} toParam={toParam} />
+      </div>
+
+      {/* Tổng doanh thu */}
+      <div className="bg-green-50 border border-green-200 rounded-xl px-5 py-4 flex items-center justify-between">
+        <div>
+          <p className="text-sm text-green-700 font-medium">Tổng doanh thu</p>
+          <p className="text-xs text-green-500 mt-0.5">
+            {orders.length} đơn hàng
+          </p>
+        </div>
+        <p className="text-2xl font-bold text-green-600">{formatVND(totalRevenue)}</p>
       </div>
 
       {orders.length === 0 ? (

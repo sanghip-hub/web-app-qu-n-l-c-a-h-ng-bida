@@ -1,6 +1,6 @@
 import { startOfDay, endOfDay, subDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
 
-export type Period = "today" | "yesterday" | "7days" | "thisMonth" | "lastMonth";
+export type Period = "today" | "yesterday" | "7days" | "thisMonth" | "lastMonth" | "custom";
 
 export const PERIODS: { key: Period; label: string }[] = [
   { key: "today", label: "Hôm nay" },
@@ -10,8 +10,15 @@ export const PERIODS: { key: Period; label: string }[] = [
   { key: "lastMonth", label: "Tháng trước" },
 ];
 
-export function getPeriodRange(period: string): { from: Date; to: Date } {
+export function getPeriodRange(
+  period: string,
+  customFrom?: string,
+  customTo?: string
+): { from: Date; to: Date } {
   const now = new Date();
+  if (period === "custom" && customFrom && customTo) {
+    return { from: startOfDay(new Date(customFrom)), to: endOfDay(new Date(customTo)) };
+  }
   switch (period) {
     case "today":
       return { from: startOfDay(now), to: endOfDay(now) };
